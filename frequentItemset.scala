@@ -85,26 +85,25 @@ object FrequentItemSets {
 			}
 		}
 		frequentSets.foreach(println)
-		// var setSize = 2
-		// while(setSize <= 3 || frequentSets.size == 0) {
+		var setSize = 2
+		while(setSize <= k || frequentSets.size == 0) {
 
-		// 	for(freqSet <- frequentSets){
+			for(freqSet <- frequentSets){
 
-		// 		for(freqSing <- frequentItems.values) {
-		// 			if(freqSet.last < freqSing){
-		// 				if(isCandidateSet(freqSet, freqSing, frequentSets)) {
-		// 				//add to candidate list
+				for(freqSing <- frequentItems.values) {
+					if(freqSet.last < freqSing){
+						if(isCandidateSet(freqSet, freqSing, frequentSets)) {
+						//add to candidate list
 
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// }
+						}
+					}
+				}
+			}
+		}
 	}
 
-	// def isCandidateSet(freqSet: Seq[Int], freqSing: Int, frequentSets: Array[Seq[Int]]): Boolean = {
-	// 	for(i <- 0 to (freqSet.size - 1)){
-
-	// 	}
-	// }
+	def isCandidateSet(freqSet: Seq[Int], freqSing: Int, frequentSets: Array[Seq[Int]]): Boolean = {
+		val possibleCandidates = (freqSet :+ freqSing).combinations(freqSet.size).toList
+		
+	}
 }
