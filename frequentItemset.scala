@@ -6,13 +6,23 @@ object FrequentItemSets {
 	def main(args:Array[String]){
 
 		val fileName: String = "dataset/testDat.dat"
-		//fetch each basket from the data file
-		var count = 0;
+		//The size of the itemsets
+		val k = 2
+		//The support needed for frequent itemsets
+		val s = 1
 
+		//Define a list of all itemsets
+		var singletons: Set[Set[Int]]
+
+		for(i <- 1 to n) yield {
+    			r.nextInt(n)
+		}
+	}
+
+	def aPriori(frequentItems: Set[Int], k: Int, s: Int) {
+		//fetch each basket from the data file
 		for(line <- Source.fromFile(fileName).getLines) {
 			println(line)
-			count += 1
-
 		}
 	}
 }
