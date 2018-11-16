@@ -10,7 +10,7 @@ object FrequentItemSets {
 		//The size of the itemsets, should be at least 3
 		val k: Int = 5
 		//The support needed for frequent itemsets
-		val s: Int = 1000
+		val s: Int = 1
 		//The confidence threshold for association rules
 		val c: Double = 0.5
 
@@ -96,7 +96,9 @@ object FrequentItemSets {
 	*/
 	def aPrioriSecondPass(frequentItems: Map[Int, Int],
 						  k: Int,
-						  s: Int,): (Map[Int, Int], Map[Seq[Int], Int]) =  {
+						  s: Int,
+						  allFreqSets: Map[Seq[Int], Int],
+						  fileName: String): (Array[Seq[Int]], Map[Seq[Int], Int]) =  {
 
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 		//make a copy of the "global" map for adding new frequent sets
