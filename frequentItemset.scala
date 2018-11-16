@@ -5,13 +5,13 @@ object FrequentItemSets {
 
 	def main(args:Array[String]){
 
-		val fileName: String = "dataset/miniTest.dat"
+		val fileName: String = "dataset/T10I4D100K.dat"
 		//The size of the itemsets
-		val k = 5
+		val k: Int = 5
 		//The support needed for frequent itemsets
-		val s = 1
+		val s: Int = 1000
 		//The confidence threshold for association rules
-		val c = 0
+		val c: Double = 0.5
 		//Define a list of all itemsets
 		val f = scala.io.Source.fromFile(fileName)
 		var counts: Array[Int] = Array.fill(1000)(0)
@@ -46,13 +46,20 @@ object FrequentItemSets {
 		rules.foreach(println)
 
 	}
-
-	def aPriori(frequentItems: Map[Int, Int],
-		k: Int,
-		s: Int,
+	/** Find all frequent itemsets of size k with support atleast s
+	*
+	*  @param frequentItems: A map (newInd => frequentItem) for using the
+	*			triangular array for counting all pairs
+	*  @param k: the maximum size of the item sets
+	*  @param s: the support threshold for frequent item sets
+	*  @param allFreqSets: A map containing all frequent sets and their support,
+	*			needed for generating the association rules in a (somewhat) effecient manner
+	*  @return the map containing all frequent sets up to size k and their support
+	*/
+	def aPriori(frequentItems: Map[Int, Int], k: Int, s: Int,
 		allFreqSets: Map[Seq[Int], Int]): Map[Seq[Int], Int] = {
 
-		val fileName: String = "dataset/miniTest.dat"
+		val fileName: String = "dataset/T10I4D100K.dat"
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 		var allFrequentSets: Map[Seq[Int], Int] = allFreqSets
 
@@ -161,6 +168,17 @@ object FrequentItemSets {
 		allFrequentSets
 	}
 
+	/** Function used to see if a possible set of size k + 1 could be frequent.
+	*		that is: are all subsets of size k containg these elements frequent?
+	*
+	*  @param freqSet: A frequent set of size k, used for (trying to) bulding 
+	*			a set of size k + 1
+	*  @param freqSing: A frequent singelton that will be combined with the elements
+	*					from freqSet
+	*  @param frequentSets: The frequent sets of size k - 1, used to check if all subsets
+	*				of size k - 1 from the set (freqSet U freqSing) are frequent
+	*  @return True if all subsets are frequent, false otherwise
+	*/
 	def isCandidateSet(freqSet: Seq[Int], freqSing: Int, frequentSets: Array[Seq[Int]]): Boolean = {
 		val possibleCandidates = (freqSet :+ freqSing).combinations(freqSet.size).toList
 		for (candidate <- possibleCandidates){
@@ -171,7 +189,16 @@ object FrequentItemSets {
 		return true
 	}
 
-	def associationRules(frequentItemSets: Map[Seq[Int], Int], s: Int, c: Int): List[(String, Double)] = {
+	/** Function used to construct all association rules with confidence
+	*		atleast c
+	*
+	*  @param frequentItemSets: A map containing all frequent item sets with support
+	*			atleast s as well as their support.
+	*  @param s: the support (not used right now)
+	*  @param c: the threshold for the confidence
+	*  @return A list of all rules and their confidence as ("set1 => set2", confidence)
+	*/
+	def associationRules(frequentItemSets: Map[Seq[Int], Int], s: Int, c: Double): List[(String, Double)] = {
 		var associationRules: List[(String, Double)] = List()
 		for(setTuple <- frequentItemSets){
 			val set: Seq[Int] = setTuple._1
@@ -212,6 +239,14 @@ object FrequentItemSets {
 		associationRules
 	}
 
+	/** Function to calculate the confidence of a association rule:
+	*			left => right ("left implies right")
+	*
+	*  @param left: The left hand set
+	*  @param right: The right hand set
+	*  @param frequentItemSets: A map with the support for each frequent set
+	*  @return The confidence of the rule left => right
+	*/
 	def calculateConfidence(left: Seq[Int], right: Seq[Int], frequentItemSets: Map[Seq[Int], Int]): Double = {
 		val supportLeft: Double = frequentItemSets(left)
 		val wholeSet: Seq[Int] = left ++ right
