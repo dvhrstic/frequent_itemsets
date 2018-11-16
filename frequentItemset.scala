@@ -4,16 +4,16 @@ import util.control.Breaks._
 object FrequentItemSets {
 
 	def main(args:Array[String]){
+		
 		//The path to the file containing the data set
 		val fileName: String = "dataset/miniTest.dat"
-		//The size of the itemsets
+
+		//The size of the itemsets, should be at least 3
 		val k: Int = 5
 		//The support needed for frequent itemsets
 		val s: Int = 1
 		//The confidence threshold for association rules
 		val c: Double = 0.5
-		//Map containg all frequent items (so far) and their support
-		//var allFrequentSets: Map[Seq[Int], Int] = Map()
 
 		//firstPassResults = (frequentItems, allFrequentSets)
 		val firstPassResults: (Map[Int, Int], Map[Seq[Int], Int]) = aPrioriFirstPass(fileName, k, s)
@@ -46,7 +46,10 @@ object FrequentItemSets {
 	*  @return A tuple with the map for all frequent items and their support and a "global" map
 	*			for storing all frequent sets and their support (for passing along to the next step)
 	*/
-	def aPrioriFirstPass(fileName: String, k: Int, s: Int): (Map[Int, Int], Map[Seq[Int], Int]) = {
+	def aPrioriFirstPass(fileName: String,
+						 k: Int,
+						 s: Int): (Map[Int, Int], Map[Seq[Int], Int]) = {
+
 		//Define a list of all itemsets
 		val f = scala.io.Source.fromFile(fileName)
 		//There are 1000 unique items, init the count array to 0s.
@@ -92,8 +95,11 @@ object FrequentItemSets {
 	*  @return A tuple with an array of all frequent pairs and a "global" map for storing all
 	*		 frequent sets and their support (for passing along to the next step)
 	*/
-	def aPrioriSecondPass(frequentItems: Map[Int, Int], k: Int, s: Int,
-		allFreqSets: Map[Seq[Int], Int], fileName: String): (Array[Seq[Int]], Map[Seq[Int], Int]) = {
+	def aPrioriSecondPass(frequentItems: Map[Int, Int],
+						  k: Int,
+						  s: Int,
+						  allFreqSets: Map[Seq[Int], Int],
+						  fileName: String): (Array[Seq[Int]], Map[Seq[Int], Int]) = {
 
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 		//make a copy of the "global" map for adding new frequent sets
@@ -169,9 +175,12 @@ object FrequentItemSets {
 	*			- used for constructing candidate sets of size k + 1
 	*  @return the map containing all frequent sets up to size k and their support
 	*/
-	def aPrioriKPass(freqPairs: Array[Seq[Int]], k: Int, s: Int,
-		allFreqSets: Map[Seq[Int], Int], fileName: String,
-		frequentItems: Map[Int, Int]): Map[Seq[Int], Int] = {
+	def aPrioriKPass(freqPairs: Array[Seq[Int]],
+				     k: Int,
+					 s: Int,
+					 allFreqSets: Map[Seq[Int], Int],
+					 fileName: String,
+					 frequentItems: Map[Int, Int]): Map[Seq[Int], Int] = {
 
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 		//make a copy of the "global" map for adding new frequent sets
@@ -258,7 +267,10 @@ object FrequentItemSets {
 	*				of size k - 1 from the set (freqSet U freqSing) are frequent
 	*  @return True if all subsets are frequent, false otherwise
 	*/
-	def isCandidateSet(freqSet: Seq[Int], freqSing: Int, frequentSets: Array[Seq[Int]]): Boolean = {
+	def isCandidateSet(freqSet: Seq[Int],
+					   freqSing: Int,
+					   frequentSets: Array[Seq[Int]]): Boolean = {
+
 		val possibleCandidates = (freqSet :+ freqSing).combinations(freqSet.size).toList
 		for (candidate <- possibleCandidates){
 			if(!frequentSets.contains(candidate)){
@@ -277,7 +289,10 @@ object FrequentItemSets {
 	*  @param c: the threshold for the confidence
 	*  @return A list of all rules and their confidence as ("set1 => set2", confidence)
 	*/
-	def associationRules(frequentItemSets: Map[Seq[Int], Int], s: Int, c: Double): List[(String, Double)] = {
+	def associationRules(frequentItemSets: Map[Seq[Int], Int],
+	                     s: Int,
+						 c: Double): List[(String, Double)] = {
+
 		//A list to hold all rules with confidence atleast c
 		var associationRules: List[(String, Double)] = List()
 		//Iterate over all frequent sets
@@ -336,7 +351,10 @@ object FrequentItemSets {
 	*  @param frequentItemSets: A map with the support for each frequent set
 	*  @return The confidence of the rule left => right
 	*/
-	def calculateConfidence(left: Seq[Int], right: Seq[Int], frequentItemSets: Map[Seq[Int], Int]): Double = {
+	def calculateConfidence(left: Seq[Int],
+							right: Seq[Int],
+							frequentItemSets: Map[Seq[Int], Int]): Double = {
+
 		val supportLeft: Double = frequentItemSets(left)
 		val wholeSet: Seq[Int] = left ++ right
 		val supportWhole: Double = frequentItemSets(wholeSet.sorted)
