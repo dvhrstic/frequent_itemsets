@@ -5,11 +5,11 @@ object FrequentItemSets {
 
 	def main(args:Array[String]){
 
-		val fileName: String = "dataset/T10I4D100K.dat"
+		val fileName: String = "dataset/miniTest.dat"
 		//The size of the itemsets
 		val k = 5
 		//The support needed for frequent itemsets
-		val s = 1000
+		val s = 1
 		//Define a list of all itemsets
 		val f = scala.io.Source.fromFile(fileName)
 		var counts: Array[Int] = Array.fill(1000)(0)
@@ -23,24 +23,30 @@ object FrequentItemSets {
 		}finally{f.close()}
 		
 
-		var item = 0;
-		var indexMap = 0;
+		var item = 0
+		var indexMap = 0
+		var allFrequentSets: Map[Seq[Int], Int] = Map()
 		var frequentItems: Map[Int, Int] = Map()
 		for(i <- counts){
 			if(i >= s ){
 				frequentItems = frequentItems + (indexMap -> item)
+				allFrequentSets = allFrequentSets + (Seq(item) -> i)
 				indexMap += 1;
 			}
 			item += 1;
 		}
 
-		aPriori(frequentItems, k, s)
+		allFrequentSets = aPriori(frequentItems, k, s, allFrequentSets)
 	}
 
-	def aPriori(frequentItems: Map[Int, Int], k: Int, s: Int) {
+	def aPriori(frequentItems: Map[Int, Int], 
+		k: Int,
+		s: Int,
+		allFreqSets: Map[Seq[Int], Int]): Map[Seq[Int], Int] = {
 		println("In apriori")
-		val fileName: String = "dataset/T10I4D100K.dat"
+		val fileName: String = "dataset/miniTest.dat"
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
+		var allFrequentSets: Map[Seq[Int], Int] = allFreqSets
 
 		//number of frequent singletons
 		val m = frequentItems.size
@@ -88,7 +94,9 @@ object FrequentItemSets {
 					// and add as frequent pair as support >= s
 					val item1 = frequentItems(i - 1)
 					val item2 = frequentItems(j - 1)
-					frequentSets = frequentSets :+ Seq(item1, item2)
+					val items = Seq(item1, item2)
+					frequentSets = frequentSets :+ items
+					allFrequentSets = allFrequentSets + (items -> counts(k))
 				}
 			}
 		}
@@ -140,9 +148,12 @@ object FrequentItemSets {
 			}
 			//print("candidateSets: ")
 			//candidateSetsToCount.keys.foreach(println)
+			allFrequentSets = allFrequentSets ++ candidateSetsToCount
 			frequentSets = candidateSetsToCount.filter(_._2 >= s).keys.toArray
 			setSize += 1;
 		}
+
+		allFrequentSets
 	}
 
 	def isCandidateSet(freqSet: Seq[Int], freqSing: Int, frequentSets: Array[Seq[Int]]): Boolean = {
@@ -153,6 +164,10 @@ object FrequentItemSets {
 			}
 		}
 		return true
+	}
+
+	def associationRules(frequentItemSets: Map[Seq[Int], Int], s: Int, c: Int) {
+		
 	}
 
 }
