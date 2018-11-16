@@ -5,13 +5,38 @@ object FrequentItemSets {
 
 	def main(args:Array[String]){
 
-		val fileName: String = "dataset/T10I4D100K.dat"
+		val fileName: String = "dataset/miniTest.dat"
 		//The size of the itemsets
 		val k: Int = 5
 		//The support needed for frequent itemsets
-		val s: Int = 1000
+		val s: Int = 1
 		//The confidence threshold for association rules
 		val c: Double = 0.5
+		//Map containg all frequent items (so far) and their support
+		//var allFrequentSets: Map[Seq[Int], Int] = Map()
+
+		//firstPassResults = (frequentItems, allFrequentSets)
+		val firstPassResults: (Map[Int, Int], Map[Seq[Int], Int]) = aPrioriFirstPass(fileName, k, s)
+		val allFrequentSets: Map[Seq[Int], Int] = aPriori(firstPassResults._1, k, s, firstPassResults._2, fileName)
+		val rules: List[(String, Double)] = associationRules(allFrequentSets, s, c)
+		println("All frequent sets (s = " + s + "):")
+		allFrequentSets.foreach(println)
+		println("All association rules with confidence >= " + c + ": ")
+		rules.foreach(println)
+
+	}
+
+	/** Perform the first pass of the A-Priori algorithm, i.e
+	*		find all singletons with support atleast s
+	*
+	*  @param fileName: the name of the file containing the dataset
+	*  @param k: the maximum size of the item sets
+	*  @param s: the support threshold for frequent item sets
+	*  @param allFreqSets: A map containing all frequent sets and their support,
+	*			needed for generating the association rules in a (somewhat) effecient manner
+	*  @return the map containing all frequent sets up to size k and their support
+	*/
+	def aPrioriFirstPass(fileName: String, k: Int, s: Int): (Map[Int, Int], Map[Seq[Int], Int]) = {
 		//Define a list of all itemsets
 		val f = scala.io.Source.fromFile(fileName)
 		var counts: Array[Int] = Array.fill(1000)(0)
@@ -23,7 +48,6 @@ object FrequentItemSets {
 				}
 			}
 		}finally{f.close()}
-
 
 		var item = 0
 		var indexMap = 0
@@ -37,15 +61,9 @@ object FrequentItemSets {
 			}
 			item += 1;
 		}
-
-		allFrequentSets = aPriori(frequentItems, k, s, allFrequentSets)
-		val rules: List[(String, Double)] = associationRules(allFrequentSets, s, c)
-		println("All frequent sets (s = " + s + "):")
-		allFrequentSets.foreach(println)
-		println("All association rules with confidence >= " + c + ": ")
-		rules.foreach(println)
-
+		(frequentItems, allFrequentSets)
 	}
+
 	/** Find all frequent itemsets of size k with support atleast s
 	*
 	*  @param frequentItems: A map (newInd => frequentItem) for using the
@@ -57,9 +75,8 @@ object FrequentItemSets {
 	*  @return the map containing all frequent sets up to size k and their support
 	*/
 	def aPriori(frequentItems: Map[Int, Int], k: Int, s: Int,
-		allFreqSets: Map[Seq[Int], Int]): Map[Seq[Int], Int] = {
+		allFreqSets: Map[Seq[Int], Int], fileName: String): Map[Seq[Int], Int] = {
 
-		val fileName: String = "dataset/T10I4D100K.dat"
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 		var allFrequentSets: Map[Seq[Int], Int] = allFreqSets
 
