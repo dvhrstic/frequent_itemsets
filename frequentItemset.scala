@@ -167,7 +167,41 @@ object FrequentItemSets {
 	}
 
 	def associationRules(frequentItemSets: Map[Seq[Int], Int], s: Int, c: Int) {
-		
+		for(set <- frequentItemSets){
+			k = set.size()
+			if ( k > 1){
+
+				k match {
+					case k == 2 {
+
+					}
+					case _ {
+						var confidence = 0
+						
+							for (item <- set)
+								currentSet = set.drop()
+								
+								while(k > 0){
+
+									val leftSubSet = set(0 to k - 1)
+									if (k == )
+									val rightSubSet = Seq(set(k-1))
+									calculateConfidence(leftSubSet,rightSubSet,frequentItemSets)
+									subSetOfCurrentSet += 
+									k =- 1
+						}
+
+						}
+				}
+
+			}
+		}
+
+	}
+
+	def calculateConfidence(left: Seq[Int], right: Set[Int], Map[Seq[Int], Int]){
+
+
 	}
 
 }
