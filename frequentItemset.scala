@@ -4,12 +4,13 @@ import util.control.Breaks._
 object FrequentItemSets {
 
 	def main(args:Array[String]){
+		//hej
 		//The path to the file containing the data set
-		val fileName: String = "dataset/miniTest.dat"
+		val fileName: String = "dataset/T10I4D100K.dat"
 		//The size of the itemsets
 		val k: Int = 5
 		//The support needed for frequent itemsets
-		val s: Int = 1
+		val s: Int = 1000
 		//The confidence threshold for association rules
 		val c: Double = 0.5
 		//Map containg all frequent items (so far) and their support
@@ -29,7 +30,7 @@ object FrequentItemSets {
 
 		//Display the results
 		println("All frequent sets (s = " + s + "):")
-		allFrequentSets.foreach(println)
+		allFrequentSets.filter(x => x._1.size > 1).foreach(println)
 		println("All association rules with confidence >= " + c + ": ")
 		rules.foreach(println)
 
@@ -83,7 +84,7 @@ object FrequentItemSets {
 	/** Perform the second pass of the A-Priori algorithm, i.e
 	*		find all pairs with support atleast s
 	*
-	*  @param frequentItems: the frequent singletons and their support
+	*  @param frequentItems: the frequent singletons and their new mapping
 	*  @param k: the maximum size of the item sets
 	*  @param s: the support threshold for frequent item sets
 	*  @param allFreqSets: A map containing all frequent sets and their support (so far),
@@ -165,7 +166,7 @@ object FrequentItemSets {
 	*  @param allFreqSets: A map containing all frequent sets and their support (so far),
 	*			needed for generating the association rules in a (somewhat) effecient manner
 	*  @param fileName: the name of the file containing the dataset
-	*  @param frequentItems: the frequent singletons and their support
+	*  @param frequentItems: the frequent singletons
 	*			- used for constructing candidate sets of size k + 1
 	*  @return the map containing all frequent sets up to size k and their support
 	*/
