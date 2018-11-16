@@ -10,6 +10,8 @@ object FrequentItemSets {
 		val k = 5
 		//The support needed for frequent itemsets
 		val s = 1
+		//The confidence threshold for association rules
+		val c = 0
 		//Define a list of all itemsets
 		val f = scala.io.Source.fromFile(fileName)
 		var counts: Array[Int] = Array.fill(1000)(0)
@@ -21,7 +23,7 @@ object FrequentItemSets {
 				}
 			}
 		}finally{f.close()}
-		
+
 
 		var item = 0
 		var indexMap = 0
@@ -37,13 +39,19 @@ object FrequentItemSets {
 		}
 
 		allFrequentSets = aPriori(frequentItems, k, s, allFrequentSets)
+		val rules: List[(String, Double)] = associationRules(allFrequentSets, s, c)
+		println("All frequent sets (s = " + s + "):")
+		allFrequentSets.foreach(println)
+		println("All association rules with confidence >= " + c + ": ")
+		rules.foreach(println)
+
 	}
 
-	def aPriori(frequentItems: Map[Int, Int], 
+	def aPriori(frequentItems: Map[Int, Int],
 		k: Int,
 		s: Int,
 		allFreqSets: Map[Seq[Int], Int]): Map[Seq[Int], Int] = {
-		println("In apriori")
+
 		val fileName: String = "dataset/miniTest.dat"
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 		var allFrequentSets: Map[Seq[Int], Int] = allFreqSets
@@ -100,12 +108,10 @@ object FrequentItemSets {
 				}
 			}
 		}
-		println("done with pairs!")
+
 		var setSize = 3
 		while(setSize <= k && frequentSets.size != 0) {
 			println("k = " + setSize)
-			println("Frequent sets of size " + (setSize - 1) + ": ")
-			frequentSets.foreach(println)
 			var candidateSetsToCount: Map[Seq[Int], Int] = Map()
 			var candidateSets: Array[Seq[Int]] = Array()
 			for(freqSet <- frequentSets){
@@ -146,8 +152,7 @@ object FrequentItemSets {
 					}
 				}
 			}
-			//print("candidateSets: ")
-			//candidateSetsToCount.keys.foreach(println)
+
 			allFrequentSets = allFrequentSets ++ candidateSetsToCount
 			frequentSets = candidateSetsToCount.filter(_._2 >= s).keys.toArray
 			setSize += 1;
@@ -166,42 +171,52 @@ object FrequentItemSets {
 		return true
 	}
 
-	def associationRules(frequentItemSets: Map[Seq[Int], Int], s: Int, c: Int) {
-		for(set <- frequentItemSets){
-			k = set.size()
-			if ( k > 1){
-
+	def associationRules(frequentItemSets: Map[Seq[Int], Int], s: Int, c: Int): List[(String, Double)] = {
+		var associationRules: List[(String, Double)] = List()
+		for(setTuple <- frequentItemSets){
+			val set: Seq[Int] = setTuple._1
+			val k: Int = set.size
+			if (k > 1) {
 				k match {
-					case k == 2 {
+					case 2 => {
+						for(i <- 0 to 1){
+							var leftElem: Seq[Int] = Seq(set(i))
+							var rightElem: Seq[Int] = Seq(set(1 - i))
+							var conf: Double = calculateConfidence(leftElem, rightElem, frequentItemSets)
+							if(conf >= c) {
+								associationRules = associationRules :+ (leftElem + " => " + rightElem, conf)
+							}
+						}
+					}
+					case _ => {
+
+						for (i <- 0 to (set.size - 1)){
+							var rightSide: Seq[Int] = Seq(set(i))
+							var leftSide: Seq[Int] = set.diff(rightSide)
+							var confidence: Double = calculateConfidence(leftSide, rightSide, frequentItemSets)
+							var index: Int = i + 1
+							while(confidence >= c && leftSide.size > 1 && index < set.size){
+								associationRules = associationRules :+ (leftSide + " => " + rightSide, confidence)
+								rightSide = rightSide :+ set(index)
+								leftSide = set.diff(rightSide)
+								confidence = calculateConfidence(leftSide, rightSide, frequentItemSets)
+								index += 1
+							}
+						}
 
 					}
-					case _ {
-						var confidence = 0
-						
-							for (item <- set)
-								currentSet = set.drop()
-								
-								while(k > 0){
-
-									val leftSubSet = set(0 to k - 1)
-									if (k == )
-									val rightSubSet = Seq(set(k-1))
-									calculateConfidence(leftSubSet,rightSubSet,frequentItemSets)
-									subSetOfCurrentSet += 
-									k =- 1
-						}
-
-						}
 				}
 
 			}
 		}
-
+		associationRules
 	}
 
-	def calculateConfidence(left: Seq[Int], right: Set[Int], Map[Seq[Int], Int]){
-
-
+	def calculateConfidence(left: Seq[Int], right: Seq[Int], frequentItemSets: Map[Seq[Int], Int]): Double = {
+		val supportLeft: Double = frequentItemSets(left)
+		val wholeSet: Seq[Int] = left ++ right
+		val supportWhole: Double = frequentItemSets(wholeSet.sorted)
+		supportWhole/supportLeft
 	}
 
 }
