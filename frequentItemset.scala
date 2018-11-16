@@ -34,9 +34,10 @@ object FrequentItemSets {
 	*  @param fileName: the name of the file containing the dataset
 	*  @param k: the maximum size of the item sets
 	*  @param s: the support threshold for frequent item sets
-	*  @param allFreqSets: A map containing all frequent sets and their support,
+	*  @param allFreqSets: A map containing all frequent sets and their support (so far),
 	*			needed for generating the association rules in a (somewhat) effecient manner
-	*  @return the map containing all frequent sets up to size k and their support
+	*  @return A tuple with the map for all frequent items and their support and a "global" map
+	*			for storing all frequent sets and their support (for passing along to the next step)
 	*/
 	def aPrioriFirstPass(fileName: String, k: Int, s: Int): (Map[Int, Int], Map[Seq[Int], Int]) = {
 		//Define a list of all itemsets
@@ -69,13 +70,14 @@ object FrequentItemSets {
 	/** Perform the second pass of the A-Priori algorithm, i.e
 	*		find all pairs with support atleast s
 	*
-	*  @param frequentItems: the name of the file containing the dataset
+	*  @param frequentItems: the frequent singletons and their support
 	*  @param k: the maximum size of the item sets
 	*  @param s: the support threshold for frequent item sets
-	*  @param allFreqSets: A map containing all frequent sets and their support,
+	*  @param allFreqSets: A map containing all frequent sets and their support (so far),
 	*			needed for generating the association rules in a (somewhat) effecient manner
 	*  @param fileName: the name of the file containing the dataset
-	*  @return the map containing all frequent sets up to size k and their support
+	*  @return A tuple with an array of all frequent pairs and a "global" map for storing all
+	*		 frequent sets and their support (for passing along to the next step)
 	*/
 	def aPrioriSecondPass(frequentItems: Map[Int, Int], k: Int, s: Int,
 		allFreqSets: Map[Seq[Int], Int], fileName: String): (Array[Seq[Int]], Map[Seq[Int], Int]) = {
@@ -140,12 +142,15 @@ object FrequentItemSets {
 
 	/** Find all frequent itemsets of size k with support atleast s
 	*
-	*  @param frequentItems: A map (newInd => frequentItem) for using the
-	*			triangular array for counting all pairs
+	*  @param freqPairs: An array with all frequent pairs
+	*			- used for constructing candidate sets of size k + 1
 	*  @param k: the maximum size of the item sets
 	*  @param s: the support threshold for frequent item sets
-	*  @param allFreqSets: A map containing all frequent sets and their support,
+	*  @param allFreqSets: A map containing all frequent sets and their support (so far),
 	*			needed for generating the association rules in a (somewhat) effecient manner
+	*  @param fileName: the name of the file containing the dataset
+	*  @param frequentItems: the frequent singletons and their support
+	*			- used for constructing candidate sets of size k + 1
 	*  @return the map containing all frequent sets up to size k and their support
 	*/
 	def aPrioriKPass(freqPairs: Array[Seq[Int]], k: Int, s: Int,
