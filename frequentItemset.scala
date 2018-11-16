@@ -5,11 +5,11 @@ object FrequentItemSets {
 
 	def main(args:Array[String]){
 
-		val fileName: String = "dataset/miniTest.dat"
+		val fileName: String = "dataset/T10I4D100K.dat"
 		//The size of the itemsets
-		val k = 3
+		val k = 5
 		//The support needed for frequent itemsets
-		val s = 1
+		val s = 1000
 		//Define a list of all itemsets
 		val f = scala.io.Source.fromFile(fileName)
 		var counts: Array[Int] = Array.fill(1000)(0)
@@ -34,12 +34,12 @@ object FrequentItemSets {
 			item += 1;
 		}
 
-
 		aPriori(frequentItems, k, s)
 	}
 
 	def aPriori(frequentItems: Map[Int, Int], k: Int, s: Int) {
-		val fileName: String = "dataset/miniTest.dat"
+		println("In apriori")
+		val fileName: String = "dataset/T10I4D100K.dat"
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 
 		//number of frequent singletons
@@ -51,7 +51,12 @@ object FrequentItemSets {
 		var counts: Array[Int] = Array.fill(numPairs)(0)
 
 		//fetch each basket from the data file
+		var basketCount = 1
 		for(basket <- f) {
+			if(basketCount % 1000 == 0){
+				println("basket nr: " + basketCount)
+			}
+			basketCount += 1
 			var basketArray: Array[Int] = Array()
 			for(item <- basket.split(" ")) {
 				basketArray = basketArray :+ item.toInt
@@ -87,13 +92,16 @@ object FrequentItemSets {
 				}
 			}
 		}
-	
-		var setSize = 2
-		while(setSize <= k || frequentSets.size != 0) {
+		println("done with pairs!")
+		var setSize = 3
+		while(setSize <= k && frequentSets.size != 0) {
+			println("k = " + setSize)
+			println("Frequent sets of size " + (setSize - 1) + ": ")
+			frequentSets.foreach(println)
 			var candidateSetsToCount: Map[Seq[Int], Int] = Map()
 			var candidateSets: Array[Seq[Int]] = Array()
 			for(freqSet <- frequentSets){
-				
+
 				for(freqSing <- frequentItems.values) {
 					if(freqSet.last < freqSing){
 						if(isCandidateSet(freqSet, freqSing, frequentSets)) {
@@ -102,7 +110,12 @@ object FrequentItemSets {
 					}
 				}
 			}
+			basketCount = 0
 			for(basket <- f) {
+				if (basketCount % 1000 == 0){
+					println("k: " + setSize + " basket nr: " + basketCount)
+				}
+				basketCount += 1
 				var basketArray: Array[Int] = Array()
 				for(item <- basket.split(" ")) {
 					basketArray = basketArray :+ item.toInt
@@ -115,22 +128,22 @@ object FrequentItemSets {
 						}
 					}
 					if(setLength == candidateSet.length){
-						val candidateCount = candidateSetsToCount.get(candidateSet).getOrElse(0) 
+						val candidateCount = candidateSetsToCount.get(candidateSet).getOrElse(0)
 						if(candidateCount == 0){
-							candidateSetsToCount += (candidateSet ->  1) 
+							candidateSetsToCount += (candidateSet ->  1)
 						}else{
 							candidateSetsToCount += (candidateSet ->  (candidateCount.toInt + 1).toInt)
 						}
-						
+
 					}
 				}
 			}
-
-			candidateSetsToCount.foreach(println)
+			//print("candidateSets: ")
+			//candidateSetsToCount.keys.foreach(println)
 			frequentSets = candidateSetsToCount.filter(_._2 >= s).keys.toArray
 			setSize += 1;
 		}
-	}	
+	}
 
 	def isCandidateSet(freqSet: Seq[Int], freqSing: Int, frequentSets: Array[Seq[Int]]): Boolean = {
 		val possibleCandidates = (freqSet :+ freqSing).combinations(freqSet.size).toList
@@ -139,7 +152,7 @@ object FrequentItemSets {
 				return false
 			}
 		}
-		return true	
+		return true
 	}
 
 }
