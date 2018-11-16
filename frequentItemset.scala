@@ -17,7 +17,9 @@ object FrequentItemSets {
 
 		//firstPassResults = (frequentItems, allFrequentSets)
 		val firstPassResults: (Map[Int, Int], Map[Seq[Int], Int]) = aPrioriFirstPass(fileName, k, s)
-		val allFrequentSets: Map[Seq[Int], Int] = aPriori(firstPassResults._1, k, s, firstPassResults._2, fileName)
+		//secondPassResults = (frequentSets, allFrequentSets)
+		val secondPassResults: (Array[Seq[Int]], Map[Seq[Int], Int]) = aPrioriSecondPass(firstPassResults._1, k, s, firstPassResults._2, fileName)
+		val allFrequentSets: Map[Seq[Int], Int] = aPrioriKPass(secondPassResults._1, k, s, secondPassResults._2, fileName, firstPassResults._1)
 		val rules: List[(String, Double)] = associationRules(allFrequentSets, s, c)
 		println("All frequent sets (s = " + s + "):")
 		allFrequentSets.foreach(println)
@@ -64,18 +66,19 @@ object FrequentItemSets {
 		(frequentItems, allFrequentSets)
 	}
 
-	/** Find all frequent itemsets of size k with support atleast s
+	/** Perform the second pass of the A-Priori algorithm, i.e
+	*		find all pairs with support atleast s
 	*
-	*  @param frequentItems: A map (newInd => frequentItem) for using the
-	*			triangular array for counting all pairs
+	*  @param frequentItems: the name of the file containing the dataset
 	*  @param k: the maximum size of the item sets
 	*  @param s: the support threshold for frequent item sets
 	*  @param allFreqSets: A map containing all frequent sets and their support,
 	*			needed for generating the association rules in a (somewhat) effecient manner
+	*  @param fileName: the name of the file containing the dataset
 	*  @return the map containing all frequent sets up to size k and their support
 	*/
-	def aPriori(frequentItems: Map[Int, Int], k: Int, s: Int,
-		allFreqSets: Map[Seq[Int], Int], fileName: String): Map[Seq[Int], Int] = {
+	def aPrioriSecondPass(frequentItems: Map[Int, Int], k: Int, s: Int,
+		allFreqSets: Map[Seq[Int], Int], fileName: String): (Array[Seq[Int]], Map[Seq[Int], Int]) = {
 
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 		var allFrequentSets: Map[Seq[Int], Int] = allFreqSets
@@ -89,7 +92,7 @@ object FrequentItemSets {
 		var counts: Array[Int] = Array.fill(numPairs)(0)
 
 		//fetch each basket from the data file
-		var basketCount = 1
+		var basketCount = 0
 		for(basket <- f) {
 			if(basketCount % 1000 == 0){
 				println("basket nr: " + basketCount)
@@ -132,6 +135,26 @@ object FrequentItemSets {
 				}
 			}
 		}
+		(frequentSets, allFrequentSets)
+	}
+
+	/** Find all frequent itemsets of size k with support atleast s
+	*
+	*  @param frequentItems: A map (newInd => frequentItem) for using the
+	*			triangular array for counting all pairs
+	*  @param k: the maximum size of the item sets
+	*  @param s: the support threshold for frequent item sets
+	*  @param allFreqSets: A map containing all frequent sets and their support,
+	*			needed for generating the association rules in a (somewhat) effecient manner
+	*  @return the map containing all frequent sets up to size k and their support
+	*/
+	def aPrioriKPass(freqPairs: Array[Seq[Int]], k: Int, s: Int,
+		allFreqSets: Map[Seq[Int], Int], fileName: String,
+		frequentItems: Map[Int, Int]): Map[Seq[Int], Int] = {
+
+		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
+		var allFrequentSets: Map[Seq[Int], Int] = allFreqSets
+		var frequentSets: Array[Seq[Int]] = freqPairs
 
 		var setSize = 3
 		while(setSize <= k && frequentSets.size != 0) {
@@ -148,7 +171,7 @@ object FrequentItemSets {
 					}
 				}
 			}
-			basketCount = 0
+			var basketCount = 0
 			for(basket <- f) {
 				if (basketCount % 1000 == 0){
 					println("k: " + setSize + " basket nr: " + basketCount)
