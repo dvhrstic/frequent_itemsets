@@ -96,7 +96,7 @@ object FrequentItemSets {
 	*/
 	def aPrioriSecondPass(frequentItems: Map[Int, Int],
 						  k: Int,
-						  s: Int,
+						  s: Int,): (Map[Int, Int], Map[Seq[Int], Int]) =  {
 
 		val f = scala.io.Source.fromFile(fileName).getLines.toSeq
 		//make a copy of the "global" map for adding new frequent sets
